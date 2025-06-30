@@ -7,7 +7,6 @@ class User(BaseModel, Base):
     """User class for WaterTek system"""
     __tablename__ = 'users'
 
-    id = Column(String(60), primary_key=True, nullable=False)
     email = Column(String(128), nullable=False, unique=True)
     phone = Column(String(20), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
