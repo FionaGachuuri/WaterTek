@@ -2,7 +2,7 @@ from datetime import datetime
 from os import getenv
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-import models
+from app import models
 import uuid
 
 time_format = "%Y-%m-%dT%H:%M:%S.%f"
