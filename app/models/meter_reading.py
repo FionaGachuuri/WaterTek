@@ -12,4 +12,4 @@ class MeterReading(BaseModel, Base):
     photo_url = Column(String(256), nullable=True)
     date = Column(DateTime, nullable=False)
 
-    bill = relationship("Bills", backref="Meterreadings", uselist=False)
+    bill = relationship("Bill", backref="Meterreadings", uselist=False)

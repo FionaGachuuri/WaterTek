@@ -16,5 +16,5 @@ class User(BaseModel, Base):
     role = Column(String(20), nullable=False, default='user')
 
     # Relationship
-    bill = relationship('Bills', backref="user", cascade="all, delete")
-    reading = relationship("Meterreadings", backref="user", cascade="all, delete")
+    bill = relationship('Bill', backref="users", cascade="all, delete")
+    reading = relationship("MeterReadings", backref="users", cascade="all, delete")
