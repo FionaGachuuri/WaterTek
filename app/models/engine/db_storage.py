@@ -3,10 +3,10 @@ import pymysql
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from models.base_model import BaseModel, Base
-from models.user import User
-from models.bill import Bill
-from models.meter_reading import MeterReading
+from app.models.base_model import BaseModel, Base
+from app.models.user import User
+from app.models.bill import Bill
+from app.models.meter_reading import MeterReading
 
 pymysql.install_as_MySQLdb()
 load_dotenv()
