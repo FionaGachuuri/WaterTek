@@ -6,9 +6,8 @@ from models import storage
 
 
 def generate_bill_for_reading(user, current_reading):
-   session = storage.session
-
-
+    """billing function"""
+    
    unit_price = 110
    
    previous_reading = (
@@ -22,7 +21,6 @@ def generate_bill_for_reading(user, current_reading):
 
    if not previous_reading:
        return
-
 
 
    current_month = current_reading.date.month
@@ -53,6 +51,6 @@ def generate_bill_for_reading(user, current_reading):
        date_due=current_reading.date + timedelta(days=14)
    )
 
+   storage.new()
+   storage.add(bill)
    storage.save()
-   session.add(bill)
-   session.commit()
