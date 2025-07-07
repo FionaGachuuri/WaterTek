@@ -15,8 +15,8 @@ class RegisterUser(MethodView):
     def post(self):
         try:
             data = request.get_json()
-            # print("Received data for registration:", data)
 
+            # print("Received data for registration:", data)
             if not data:
                 return jsonify({"error": "No user data provided"}), 400
 
@@ -29,6 +29,7 @@ class RegisterUser(MethodView):
                 return jsonify({"error": "Role must be either 'admin' or 'user'"}), 400
 
             # Check if email already exists
+
             # print(f"storage: {storage}")
             # print(f"storage.session: {getattr(storage, 'session', None)}")
             # print(f"User: {User}")
@@ -37,6 +38,7 @@ class RegisterUser(MethodView):
                 return jsonify({"error": "Email already exists"}), 400
 
             # print(f"generate_password_hash: {generate_password_hash}")
+
             hashed_password = generate_password_hash(data["password"])
 
             user = User(
@@ -47,8 +49,10 @@ class RegisterUser(MethodView):
                 last_name=data["last_name"],
                 role=data["role"]
             )
+
             # print(f"storage.new: {getattr(storage, 'new', None)}")
             # print(f"storage.save: {getattr(storage, 'save', None)}")
+
             storage.new(user)
             storage.save()
 
