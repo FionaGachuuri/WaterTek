@@ -7,7 +7,7 @@ from flask.views import MethodView
 from app.models.user import User
 from app import storage
 
-auth_bp = Blueprint('auth', __name__, url_prefix="/api/auth")
+auth_bp = Blueprint('auth', __name__, url_prefix="/auth")
 
 
 class RegisterUser(MethodView):
