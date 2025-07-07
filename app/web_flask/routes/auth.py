@@ -9,8 +9,9 @@ from app import storage
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/api/auth")
 
+
 class RegisterUser(MethodView):
-    """Register a new user with role (admin or author)."""
+    """Register a new user with role (admin or user)."""
     def post(self):
         try:
             data = request.get_json()
@@ -22,8 +23,8 @@ class RegisterUser(MethodView):
                 return jsonify({"error": "Missing required fields"}), 400
 
             # Validate role
-            if data["role"] not in ["admin", "author"]:
-                return jsonify({"error": "Role must be either 'admin' or 'author'"}), 400
+            if data["role"] not in ["admin", "user"]:
+                return jsonify({"error": "Role must be either 'admin' or 'user'"}), 400
 
             # Check if email already exists
             existing = storage.session.query(User).filter_by(email=data["email"]).first()
@@ -82,7 +83,6 @@ class LogoutUser(MethodView):
     """Dummy logout for JWT (stateless)."""
     @jwt_required()
     def post(self):
-        # JWT is stateless — acknowledge logout if needed
         return jsonify({"message": "Logout successful"}), 200
 
 
@@ -91,19 +91,20 @@ class DeleteUser(MethodView):
     @jwt_required()
     def delete(self):
         try:
-            claims = get_jwt()
-            if claims.get("role") != "admin":
+            user_id = get_jwt_identity()
+            current_user = storage.get(User, user_id)
+            if not current_user or not current_user.is_admin:
                 return jsonify({"error": "Admins only can delete users"}), 403
 
-            user_id = request.args.get("id")
-            if not user_id:
+            target_user_id = request.args.get("id")
+            if not target_user_id:
                 return jsonify({"error": "User ID is required"}), 400
 
-            user = storage.get(User, user_id)
-            if not user:
+            target_user = storage.get(User, target_user_id)
+            if not target_user:
                 return jsonify({"error": "User not found"}), 404
 
-            storage.delete(user)
+            storage.delete(target_user)
             storage.save()
             return jsonify({"message": "User deleted successfully"}), 200
 

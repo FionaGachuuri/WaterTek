@@ -1,0 +1,54 @@
+<!-- templates/admin/bills.html -->
+{% extends "dashboard.html" %}
+{% block content %}
+<h2 class="text-2xl font-semibold mb-4">All Bills</h2>
+
+<table class="min-w-full bg-white shadow-md rounded-xl">
+    <thead class="bg-gray-200 text-gray-700">
+        <tr>
+            <th class="py-2 px-4">User</th>
+            <th class="py-2 px-4">Date Due</th>
+            <th class="py-2 px-4">Amount</th>
+            <th class="py-2 px-4">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bill in bills %}
+        <tr class="border-t hover:bg-gray-50">
+            <td class="py-2 px-4">
+                {% if bill.user %}
+                <a href="{{ url_for('admin.view_user_detail', user_id=bill.user.id) }}"
+                   class="text-blue-500 hover:underline">
+                    {{ bill.user.first_name }} {{ bill.user.last_name }}
+                </a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="py-2 px-4">{{ bill.date_due.strftime('%Y-%m-%d') }}</td>
+            <td class="py-2 px-4">KES {{ "%.2f"|format(bill.amount_due) }}</td>
+            <td class="py-2 px-4">
+                <span class="px-2 py-1 rounded 
+                    {% if bill.status == 'paid' %}bg-green-200 text-green-800
+                    {% else %}bg-yellow-200 text-yellow-800{% endif %}">
+                    {{ bill.status.capitalize() }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="mt-4 flex justify-between items-center">
+    {% if page > 1 %}
+        <a href="{{ url_for('admin.view_bills', page=page-1) }}"
+           class="text-sm text-blue-600 hover:underline">Previous</a>
+    {% endif %}
+    <span class="text-sm">Page {{ page }}</span>
+    {% if total_bills > page * per_page %}
+        <a href="{{ url_for('admin.view_bills', page=page+1) }}"
+           class="text-sm text-blue-600 hover:underline">Next</a>
+    {% endif %}
+</div>
+{% endblock %}
