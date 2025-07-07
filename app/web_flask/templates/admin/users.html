@@ -1,0 +1,44 @@
+<!-- templates/admin/users.html -->
+{% extends "dashboard.html" %}
+{% block content %}
+<h2 class="text-2xl font-semibold mb-4">All Users</h2>
+
+<table class="min-w-full bg-white shadow-md rounded-xl">
+    <thead class="bg-gray-200 text-gray-700">
+        <tr>
+            <th class="py-2 px-4 text-left">Name</th>
+            <th class="py-2 px-4">Email</th>
+            <th class="py-2 px-4">Phone</th>
+            <th class="py-2 px-4">Role</th>
+            <th class="py-2 px-4">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr class="border-t hover:bg-gray-50">
+            <td class="py-2 px-4">{{ user.first_name }} {{ user.last_name }}</td>
+            <td class="py-2 px-4">{{ user.email }}</td>
+            <td class="py-2 px-4">{{ user.phone }}</td>
+            <td class="py-2 px-4">{{ user.role }}</td>
+            <td class="py-2 px-4">
+                <a href="{{ url_for('admin.view_user_detail', user_id=user.id) }}"
+                   class="text-blue-500 hover:underline">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="mt-4 flex justify-between items-center">
+    {% if page > 1 %}
+        <a href="{{ url_for('admin.view_users', page=page-1) }}"
+           class="text-sm text-blue-600 hover:underline">Previous</a>
+    {% endif %}
+    <span class="text-sm">Page {{ page }}</span>
+    {% if total_user > page * per_page %}
+        <a href="{{ url_for('admin.view_users', page=page+1) }}"
+           class="text-sm text-blue-600 hover:underline">Next</a>
+    {% endif %}
+</div>
+{% endblock %}
