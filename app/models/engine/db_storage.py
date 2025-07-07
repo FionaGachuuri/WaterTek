@@ -11,6 +11,7 @@ from app.models.meter_reading import MeterReading
 pymysql.install_as_MySQLdb()
 load_dotenv()
 
+
 classes = {
     "User": User,
     "Bill": Bill,
@@ -32,12 +33,15 @@ class DBStorage:
         db_name = os.getenv("DB_NAME")
 
         self.__engine = create_engine(
-            f"mysql+pymysql://{db_user}:{db_password}:@{db_host}:{db_port}/{db_name}",
+            f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}",
             pool_pre_ping=True
         )
 
         if os.getenv("WATERTEK_ENV") == "test":
             Base.metadata.drop_all(self.__engine)
+        
+        self.reload()
+        
 
     def reload(self):
         """Create session and bind it to the engine."""
