@@ -5,7 +5,7 @@ from app.models.meter_reading import MeterReading
 from app.models.bill import Bill
 from app.models.user import User
 from datetime import datetime
-from app.billing import generate_bill 
+from app.services.billing import generate_bill
 
 user_bp = Blueprint('user', __name__, url_prefix="/user")
 
@@ -92,6 +92,3 @@ def submit_issue():
         flash(f"An error occured: {str(e)}", "error")
     
     return redirect(url_for("user.dashboard"))
-
-
-        
