@@ -31,19 +31,16 @@ def create_app():
 
     # Register Blueprints
     from app.web_flask.routes.auth import auth_bp
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(auth_bp, url_prefix="/auth")
 
-    # from app.web_flask.routes.admin import admin_bp
-    # app.register_blueprint(admin_bp, url_prefix="/api/admin")
+    from app.web_flask.routes.admin import admin_bp
+    app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    # from app.web_flask.routes.billing import billing_bp
-    # app.register_blueprint(billing_bp, url_prefix="/api/billing")
+    from app.web_flask.routes.billing import billing_bp
+    app.register_blueprint(billing_bp, url_prefix="/billing")
 
-    # from app.web_flask.routes.dashboard import dashboard as dashboard_bp
-    # app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
-
-    # from app.web_flask.routes.issues import issues as issues_bp
-    # app.register_blueprint(issues_bp, url_prefix="/api/issues")
+    from app.web_flask.routes.user import user_bp
+    app.register_blueprint(user_bp, url_prefix="/user")
 
 
     return app
