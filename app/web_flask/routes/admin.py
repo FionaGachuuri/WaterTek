@@ -1,82 +1,102 @@
-from flask import Blueprint, request, jsonify
-from flask.views import MethodView
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.security import generate_password_hash, check_password_hash
+from app.models import storage
 from app.models.user import User
-from app import storage
+from app.models.bill import Bill
+from app.models.issue import Issue
+from app.utils.decorators import admin_required
 
-admin_bp = Blueprint('admin', __name__, url_prefix="/api/admin")
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-class UserList(MethodView):
-    """Admin: List and create users."""
+@admin_bp.route('/dashboard')
+@jwt_required()
+@admin_required
+def dashboard():
+    """Admin dashboard overview."""
+    total_users = storage.session.query(User).count()
+    total_bills = storage.session.query(Bill).count()
+    total_issues = storage.session.query(Issue).count()
+    return render_template('admin/dashboard.html',
+                           total_users=total_users,
+                           total_bills=total_bills,
+                           total_issues=total_issues)
 
-    @jwt_required()
-    def get(self):
-        """List all users."""
-        users = storage.session.query(User).all()
-        data = [u.to_dict() for u in users]
-        return jsonify(data), 200
+@admin_bp.route('/users')
+@jwt_required()
+@admin_required
+def view_users():
+    """Admin view of all users with pagination."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
 
-    @jwt_required()
-    def post(self):
-        """Admin can create a user directly."""
-        data = request.get_json()
-        required_fields = ["email", "phone", "password", "first_name", "last_name"]
-        if not all(field in data for field in required_fields):
-            return jsonify({"error": "Missing required fields"}), 400
+    total_user = storage.session.query(User).count()
+    users = (
+        storage.session.query(User)
+        .order_by(User.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
 
-        # Check if user already exists
-        existing = storage.session.query(User).filter_by(email=data["email"]).first()
-        if existing:
-            return jsonify({"error": "Email already exists"}), 400
+    return render_template(
+        'admin/users.html',
+        users=users,
+        page=page,
+        per_page=per_page,
+        total_user=total_user
+    )
 
-        hashed_password = generate_password_hash(data["password"])
-        user = User(
-            email=data["email"],
-            phone=data["phone"],
-            password_hash=hashed_password,
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            role=data.get("role", "user")
-        )
-        storage.new(user)
-        storage.save()
-        return jsonify({"message": "User created successfully", "user": user.to_dict()}), 201
+def view_user_detail(user_id):
+    user = storage.get(User, user_id)
+    if not user:
+        flash("User not found", "error")
+        return redirect(url_for("admin.view_users"))
+    
+    bills = (
+        storage.session.query(Bill)
+        .filter_by(user_id=user_id)
+        .order_by(Bill.date_due.desc())
+        .all()
+    )
 
+    return render_template("admin/user_detail.html", user=user, bills=bills)
 
-class UserDetail(MethodView):
-    """Admin: Get, update, or delete a single user."""
+protected_user_detail = jwt_required()(admin_required(view_user_detail))
+admin_bp.add_url_rule(
+    '/users/<user_id>',
+    view_func=protected_user_detail,
+    endpoint='view_user_detail'
+)
 
-    @jwt_required()
-    def get(self, user_id):
-        user = storage.get(User, user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        return jsonify(user.to_dict()), 200
+@admin_bp.route('/bills')
+@jwt_required()
+@admin_required
+def view_bills():
+    """Admin view of all bills with pagination."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
 
-    @jwt_required()
-    def put(self, user_id):
-        data = request.get_json()
-        user = storage.get(User, user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
+    total_bills = storage.session.query(Bill).count()
+    bills = (
+        storage.session.query(Bill)
+        .order_by(Bill.date_due.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
 
-        for field in ["email", "phone", "first_name", "last_name", "role"]:
-            if field in data:
-                setattr(user, field, data[field])
-        storage.save()
-        return jsonify({"message": "User updated", "user": user.to_dict()}), 200
+    return render_template(
+        'admin/bills.html',
+        bills=bills,
+        page=page,
+        per_page=per_page,
+        total_bills=total_bills
+    )
 
-    @jwt_required()
-    def delete(self, user_id):
-        user = storage.get(User, user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        storage.delete(user)
-        storage.save()
-        return jsonify({"message": "User deleted"}), 200
-
-
-# Register the routes
-admin_bp.add_url_rule('/users', view_func=UserList.as_view('users'))
-admin_bp.add_url_rule('/users/<user_id>', view_func=UserDetail.as_view('user_detail'))
+@admin_bp.route('/issues')
+@jwt_required()
+@admin_required
+def view_issues():
+    """Admin view of all user-submitted issues."""
+    issues = storage.session.query(Issue).all()
+    return render_template('admin/issues.html', issues=issues)

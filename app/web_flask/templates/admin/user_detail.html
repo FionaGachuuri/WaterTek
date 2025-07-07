@@ -1,0 +1,38 @@
+<!-- templates/admin/user_detail.html -->
+{% extends "dashboard.html" %}
+{% block content %}
+<h2 class="text-2xl font-semibold mb-4">User Detail</h2>
+
+<div class="bg-white shadow-md rounded-xl p-4 mb-6">
+    <h3 class="text-lg font-bold">{{ user.first_name }} {{ user.last_name }}</h3>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Phone:</strong> {{ user.phone }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+</div>
+
+<h3 class="text-xl font-semibold mb-3">Bills</h3>
+<table class="min-w-full bg-white shadow-md rounded-xl">
+    <thead class="bg-gray-200 text-gray-700">
+        <tr>
+            <th class="py-2 px-4 text-left">Date Due</th>
+            <th class="py-2 px-4">Amount</th>
+            <th class="py-2 px-4">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bill in bills %}
+        <tr class="border-t hover:bg-gray-50">
+            <td class="py-2 px-4">{{ bill.date_due.strftime('%Y-%m-%d') }}</td>
+            <td class="py-2 px-4">KES {{ "%.2f"|format(bill.amount_due) }}</td>
+            <td class="py-2 px-4">
+                <span class="px-2 py-1 rounded 
+                    {% if bill.status == 'paid' %}bg-green-200 text-green-800
+                    {% else %}bg-yellow-200 text-yellow-800{% endif %}">
+                    {{ bill.status.capitalize() }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
