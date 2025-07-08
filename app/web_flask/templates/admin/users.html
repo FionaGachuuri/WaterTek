@@ -1,44 +1,130 @@
-<!-- templates/admin/users.html -->
-{% extends "dashboard.html" %}
+{% extends "base.html" %}
+
+{% block title %}Users - WaterTek Admin{% endblock %}
+
 {% block content %}
-<h2 class="text-2xl font-semibold mb-4">All Users</h2>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">All Users</h1>
+            <p class="text-gray-600">Manage user accounts and view details</p>
+        </div>
+        <div class="flex space-x-3">
+            <!-- Search Box -->
+            <div class="relative">
+                <input type="text" 
+                       placeholder="Search users..." 
+                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<table class="min-w-full bg-white shadow-md rounded-xl">
-    <thead class="bg-gray-200 text-gray-700">
-        <tr>
-            <th class="py-2 px-4 text-left">Name</th>
-            <th class="py-2 px-4">Email</th>
-            <th class="py-2 px-4">Phone</th>
-            <th class="py-2 px-4">Role</th>
-            <th class="py-2 px-4">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr class="border-t hover:bg-gray-50">
-            <td class="py-2 px-4">{{ user.first_name }} {{ user.last_name }}</td>
-            <td class="py-2 px-4">{{ user.email }}</td>
-            <td class="py-2 px-4">{{ user.phone }}</td>
-            <td class="py-2 px-4">{{ user.role }}</td>
-            <td class="py-2 px-4">
-                <a href="{{ url_for('admin.view_user_detail', user_id=user.id) }}"
-                   class="text-blue-500 hover:underline">View</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- Users Table -->
+    <div class="bg-white rounded-lg shadow-sm border">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for user in users %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-sm font-medium text-blue-600">
+                                            {{ user.first_name[0] }}{{ user.last_name[0] }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ user.first_name }} {{ user.last_name }}</div>
+                                    <div class="text-sm text-gray-500">ID: {{ user.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.phone or 'Not provided' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if user.role == 'admin' %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ user.role.capitalize() }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{{ url_for('admin.view_user_detail', user_id=user.id) }}"
+                               class="text-blue-600 hover:text-blue-900">View Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<!-- Pagination -->
-<div class="mt-4 flex justify-between items-center">
-    {% if page > 1 %}
-        <a href="{{ url_for('admin.view_users', page=page-1) }}"
-           class="text-sm text-blue-600 hover:underline">Previous</a>
-    {% endif %}
-    <span class="text-sm">Page {{ page }}</span>
-    {% if total_user > page * per_page %}
-        <a href="{{ url_for('admin.view_users', page=page+1) }}"
-           class="text-sm text-blue-600 hover:underline">Next</a>
-    {% endif %}
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow-sm">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if page > 1 %}
+                <a href="{{ url_for('admin.view_users', page=page-1) }}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+            {% if total_user > page * per_page %}
+                <a href="{{ url_for('admin.view_users', page=page+1) }}"
+                   class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing page <span class="font-medium">{{ page }}</span>
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('admin.view_users', page=page-1) }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Previous</span>
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        Page {{ page }}
+                    </span>
+                    
+                    {% if total_user > page * per_page %}
+                        <a href="{{ url_for('admin.view_users', page=page+1) }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Next</span>
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
