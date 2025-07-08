@@ -18,3 +18,13 @@ class User(BaseModel, Base):
     # Relationship
     bill = relationship('Bill', backref="user", cascade="all, delete")
     reading = relationship("MeterReading", backref="users", cascade="all, delete")
+
+    @property
+    def is_admin(self):
+        """Check if user is an admin."""
+        return self.role == 'admin'
+
+    @property
+    def is_authenticated(self):
+        """Check if user is authenticated (always True for existing users)."""
+        return True

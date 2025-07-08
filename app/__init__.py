@@ -1,11 +1,12 @@
 import os
-from flask import Flask
+from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from app.models.base_model import Base
 from app.models import storage
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt_identity
+from app.models.user import User
 
 
 load_dotenv()
@@ -22,6 +23,10 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app.config["JWT_COOKIE_SECURE"] = False
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+
 
 
     # Initialize JWT Manager
@@ -29,7 +34,22 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Context processor to make current_user available in templates
+    @app.context_processor
+    def inject_user():
+        try:
+            user_id = get_jwt_identity()
+            if user_id:
+                current_user = storage.get(User, user_id)
+                return {'current_user': current_user}
+        except:
+            pass
+        return {'current_user': None}
+
     # Register Blueprints
+    from app.web_flask.routes import main_bp
+    app.register_blueprint(main_bp)
+
     from app.web_flask.routes.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/auth")
 

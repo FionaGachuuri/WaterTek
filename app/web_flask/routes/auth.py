@@ -1,13 +1,26 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
-    create_access_token, jwt_required, get_jwt, get_jwt_identity
+    create_access_token, jwt_required, get_jwt, get_jwt_identity,
+    set_access_cookies, set_refresh_cookies, unset_jwt_cookies
 )
 from flask.views import MethodView
 from app.models.user import User
 from app import storage
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/auth")
+
+
+@auth_bp.route('/login', methods=['GET'])
+def login_page():
+    """Display login page."""
+    return render_template('login.html')
+
+
+@auth_bp.route('/register', methods=['GET'])
+def register_page():
+    """Display registration page."""
+    return render_template('register.html')
 
 
 class RegisterUser(MethodView):
@@ -29,13 +42,14 @@ class RegisterUser(MethodView):
                 return jsonify({"error": "Role must be either 'admin' or 'user'"}), 400
 
             # Check if email already exists
-
-            # print(f"storage: {storage}")
-            # print(f"storage.session: {getattr(storage, 'session', None)}")
-            # print(f"User: {User}")
-            existing = storage.session.query(User).filter_by(email=data["email"]).first()
-            if existing:
+            existing_email = storage.session.query(User).filter_by(email=data["email"]).first()
+            if existing_email:
                 return jsonify({"error": "Email already exists"}), 400
+
+            # Check if phone number already exists
+            existing_phone = storage.session.query(User).filter_by(phone=data["phone"]).first()
+            if existing_phone:
+                return jsonify({"error": "Phone number already exists"}), 400
 
             # print(f"generate_password_hash: {generate_password_hash}")
 
@@ -83,10 +97,10 @@ class LoginUser(MethodView):
                     identity=user.id,
                     additional_claims={"role": user.role}
                 )
-                return jsonify({
-                    "message": "Login successful",
-                    "access_token": token
-                }), 200
+                response = make_response(jsonify({"message": "Login successful"}))
+                set_access_cookies(response, token)
+                return response, 200
+
             else:
                 return jsonify({"error": "Invalid email or password"}), 401
 
@@ -95,10 +109,17 @@ class LoginUser(MethodView):
 
 
 class LogoutUser(MethodView):
-    """Dummy logout for JWT (stateless)."""
+    """Logout handler for both GET and POST requests."""
+    def get(self):
+        """GET request - redirect to login page."""
+        return redirect('/auth/login')
+    
     @jwt_required()
     def post(self):
-        return jsonify({"message": "Logout successful"}), 200
+        """POST request - API logout (stateless)."""
+        response = jsonify({"message": "Logout successful"})
+        unset_jwt_cookies(response)
+        return response, 200
 
 
 class DeleteUser(MethodView):
