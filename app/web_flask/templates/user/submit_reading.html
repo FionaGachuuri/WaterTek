@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Reading - WaterTek{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="space-y-6">
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Submit Meter Reading</h1>
+            <p class="mt-2 text-gray-600">Enter your current water meter reading</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <form action="{{ url_for('user.submit_reading') }}" method="POST" class="space-y-6">
+                <div>
+                    <label for="reading" class="block text-sm font-medium text-gray-700 mb-2">
+                        Current Meter Reading (m³)
+                    </label>
+                    <div class="relative">
+                        <input type="number" 
+                               name="reading" 
+                               id="reading" 
+                               step="0.01"
+                               min="0"
+                               required
+                               class="block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
+                               placeholder="Enter your meter reading">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">m³</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Please enter the exact reading from your water meter. This should be a number in cubic meters (m³).
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Tips for accurate reading</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Read all digits from left to right</li>
+                                    <li>Include any decimal places shown on your meter</li>
+                                    <li>Make sure you're reading the correct meter if you have multiple</li>
+                                    <li>Take a photo of your meter for reference</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <a href="{{ url_for('user.dashboard') }}" 
+                       class="text-gray-600 hover:text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Submit Reading
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Readings -->
+        {% if recent_readings %}
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="px-6 py-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Your Recent Readings</h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for reading in recent_readings[:5] %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ reading.reading_value }} m³</p>
+                            <p class="text-sm text-gray-500">{{ reading.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                        <div class="text-right">
+                            {% if reading.usage %}
+                                <p class="text-sm text-gray-600">Usage: {{ reading.usage }} m³</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
