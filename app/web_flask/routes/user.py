@@ -13,33 +13,38 @@ user_bp = Blueprint('user', __name__, url_prefix="/user")
 @user_bp.route("/dashboard")
 @jwt_required()
 def dashboard():
-    user_id = get_jwt_identity()
-    user = storage.get(User, user_id)
+    try:
+        user_id = get_jwt_identity()
+        user = storage.get(User, user_id)
 
-    if not user:
-        return render_template("errors/404.html"), 404
-    
-    # Get recent readings (last 10)
-    recent_readings = (
-        storage.session.query(MeterReading)
-        .filter_by(user_id=user_id)
-        .order_by(MeterReading.date.desc())
-        .limit(10)
-        .all()
-    )
+        if not user:
+            return render_template("errors/404.html"), 404
+        
+        # Get recent readings (last 10)
+        recent_readings = (
+            storage.session.query(MeterReading)
+            .filter_by(user_id=user_id)
+            .order_by(MeterReading.date.desc())
+            .limit(10)
+            .all()
+        )
 
-    # Get recent bills (last 10)
-    recent_bills = (
-        storage.session.query(Bill)
-        .filter_by(user_id=user_id)
-        .order_by(Bill.date_due.desc())
-        .limit(10)
-        .all()
-    )
-    
-    return render_template("user/dashboard.html", 
-                         recent_readings=recent_readings, 
-                         recent_bills=recent_bills)
+        # Get recent bills (last 10)
+        recent_bills = (
+            storage.session.query(Bill)
+            .filter_by(user_id=user_id)
+            .order_by(Bill.date_due.desc())
+            .limit(10)
+            .all()
+        )
+        
+        return render_template("user/dashboard.html", 
+                             recent_readings=recent_readings, 
+                             recent_bills=recent_bills)
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Dashboard error: {str(e)}")
+        return render_template("errors/500.html"), 500
 
 @user_bp.route("/submit-reading", methods=["GET", "POST"])
 @jwt_required()
@@ -71,16 +76,8 @@ def submit_reading():
         return redirect(url_for("user.submit_reading"))
     
     try:
-        reading = MeterReading(
-            user_id=user_id,
-            reading_value=reading_value,
-            date=datetime.utcnow()
-        )
-        storage.new(reading)
-        storage.save()
-
-        # Generate bill for this reading
-        generate_bill(user_id, reading)
+        # Only generate bill for this reading (this will create and save the reading)
+        generate_bill(user_id, reading_value)
 
         flash("Meter reading submitted successfully.", "success")
     except Exception as e:

@@ -13,18 +13,7 @@ def generate_bill(user_id, reading_value, reading_date=None):
     if not user:
         raise ValueError("User not found")
 
-    # Get previous reading (if any)
-    last_reading = (
-        storage.session.query(MeterReading)
-        .filter_by(user_id=user_id)
-        .order_by(MeterReading.date.desc())
-        .first()
-    )
-
-    previous_value = last_reading.reading_value if last_reading else 0
-    units_used = reading_value - previous_value
-    amount_due = units_used * RATE_PER_UNIT
-
+    # Save the new reading first
     reading = MeterReading(
         user_id=user_id,
         reading_value=reading_value,
@@ -33,10 +22,26 @@ def generate_bill(user_id, reading_value, reading_date=None):
     storage.new(reading)
     storage.save()
 
+    # Now fetch the previous reading (excluding the one just added)
+    previous_reading = (
+        storage.session.query(MeterReading)
+        .filter(
+            MeterReading.user_id == user_id,
+            MeterReading.id != reading.id
+        )
+        .order_by(MeterReading.date.desc())
+        .first()
+    )
+
+    previous_value = previous_reading.reading_value if previous_reading else 0
+    units_used = reading_value - previous_value
+    amount_due = units_used * RATE_PER_UNIT
+
     bill = Bill(
         user_id=user_id,
         reading_id=reading.id,
         amount_due=amount_due,
+        units_used=units_used,
         status="unpaid",
         date_due=datetime.utcnow()
     )
