@@ -199,3 +199,6 @@ This project is licensed under the MIT License.
 [Maurice Ngicho](https://github.com/MauriceNgicho)
 [Alex Kinyanjui](https://github.com/xander254)
 - Inspired by modern utility management needs
+
+## Deployed version
+https://watertek.onrender.com
