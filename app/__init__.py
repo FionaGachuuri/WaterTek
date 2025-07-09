@@ -1,5 +1,5 @@
 import os
-from flask import Flask, g
+from flask import Flask, g, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -62,5 +62,19 @@ def create_app():
     from app.web_flask.routes.user import user_bp
     app.register_blueprint(user_bp, url_prefix="/user")
 
+    # Global Error Handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return render_template('errors/500.html'), 500
+
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        # Log the error for debugging
+        app.logger.error(f"Unhandled exception: {str(error)}")
+        return render_template('errors/500.html'), 500
 
     return app

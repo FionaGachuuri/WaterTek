@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import joinedload
 from app.models import storage
 from app.models.user import User
 from app.models.bill import Bill
@@ -22,7 +23,7 @@ def dashboard():
     # Get recent issues (last 5)
     recent_issues = (
         storage.session.query(Issue)
-        .join(User, Issue.user_id == User.id)
+        .options(joinedload(Issue.user))
         .order_by(Issue.created_at.desc())
         .limit(5)
         .all()
