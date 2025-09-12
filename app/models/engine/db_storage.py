@@ -37,7 +37,7 @@ class DBStorage:
             pool_pre_ping=True,
             connect_args={
                 "ssl": {
-                    "ca": os.getenv("DB_SSL_CA", "/WaterTek/cert.pem")
+                    "ca": os.getenv("DB_SSL_CA")
                 }
             }
         )
