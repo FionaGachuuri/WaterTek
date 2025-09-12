@@ -34,7 +34,7 @@ class DBStorage:
 
         self.__engine = create_engine(
             f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}",
-            pool_pre_ping=True
+            pool_pre_ping=True,
             connect_args={
                 "ssl": {
                     "ca": os.getenv("DB_SSL_CA", "/WaterTek/cert.pem")
